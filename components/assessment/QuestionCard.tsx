@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Clock3,
 } from "lucide-react";
+import type { Variants } from "framer-motion";
 
 import ProgressBar from "./ProgressBar";
 import { Question } from "@/data/types/question";
@@ -20,7 +21,7 @@ interface QuestionCardProps {
   onPrevious: () => void;
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {},
   show: {
     transition: {
@@ -30,22 +31,16 @@ const containerVariants = {
   },
 };
 
-const optionVariants = {
+const optionVariants: Variants = {
   hidden: {
     opacity: 0,
     y: 6,
     filter: "blur(3px)",
   },
-
   show: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-
-    transition: {
-      duration: 0.22,
-      ease: "easeOut",
-    },
   },
 };
 
