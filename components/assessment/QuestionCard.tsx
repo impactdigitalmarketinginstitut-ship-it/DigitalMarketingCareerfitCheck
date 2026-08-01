@@ -61,7 +61,7 @@ export default function QuestionCard({
 
   const remainingMinutes = Math.max(
     1,
-    Math.ceil((remainingQuestions * 20) / 60)
+    Math.ceil((remainingQuestions * 13) / 60)
   );
 
   // Keyboard Shortcuts
