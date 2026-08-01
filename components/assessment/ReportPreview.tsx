@@ -16,13 +16,21 @@ import { AssessmentResult } from "@/lib/assessmentEngine";
 
 interface ReportPreviewProps {
     result: AssessmentResult;
+
+    lead: {
+        fullName: string;
+        whatsapp: string;
+    };
 }
 
 export default function ReportPreview({
     result,
+    lead,
 }: ReportPreviewProps) {
-    
-const router = useRouter();
+
+    const router = useRouter();
+    const CONTACT_URL =
+        "https://impactdigitalmarketinginstitute.in/contact/";
     const [displayScore, setDisplayScore] = useState(0);
 
     useEffect(() => {
@@ -62,17 +70,13 @@ const router = useRouter();
     ];
 
     return (
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-orange-50 py-14">
-
-            {/* Background Glow */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-orange-50 py-10">
 
             <div className="absolute -left-40 top-0 h-80 w-80 rounded-full bg-orange-200 opacity-40 blur-[120px]" />
 
             <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-blue-200 opacity-40 blur-[140px]" />
 
             <div className="relative mx-auto max-w-6xl px-5">
-
-                {/* Header */}
 
                 <motion.div
                     initial={{
@@ -86,21 +90,19 @@ const router = useRouter();
                     className="text-center"
                 >
 
-                    <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-semibold text-orange-600">
-
+                    <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
                         <Sparkles size={16} />
-
-                        AI Generated Report
-
+                        ✓ Report Generated for {lead.fullName}
                     </div>
 
                     <h1 className="mt-5 text-4xl font-bold text-slate-900">
-
-                        Your Digital Marketing Career Fit Report
-
+                        Congratulations, {lead.fullName}! 🎉
                     </h1>
 
-                    <p className="mx-auto mt-4 max-w-2xl text-slate-500">
+                    <p className="mt-2 text-lg text-slate-600">
+                        Your personalized AI Career Report is ready.
+                    </p>
+                    <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-500">
 
                         Based on your answers, our assessment engine analyzed
                         your interests, commitment, learning style and career
@@ -124,7 +126,7 @@ const router = useRouter();
                     viewport={{
                         once: true,
                     }}
-                    className="mt-12 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-2xl backdrop-blur-xl"
+                    className="mt-10 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-2xl backdrop-blur-xl"
                 >
 
                     <div className="grid items-center gap-10 lg:grid-cols-[300px_1fr]">
@@ -273,13 +275,12 @@ const router = useRouter();
                     viewport={{
                         once: true,
                     }}
-                    className="mt-8 grid gap-6 lg:grid-cols-2"
+                    className="mt-8"
                 >
 
                     {/* Strengths */}
 
-                    <div className="rounded-3xl border border-white/70 bg-white/90 p-7 shadow-xl backdrop-blur-xl">
-
+                    <div className="mx-auto max-w-5xl rounded-3xl border border-white/70 bg-white/90 p-8 shadow-xl backdrop-blur-xl">
                         <div className="flex items-center gap-3">
 
                             <CheckCircle2
@@ -313,10 +314,10 @@ const router = useRouter();
                                     viewport={{
                                         once: true,
                                     }}
-                                    className="flex items-center gap-4 rounded-2xl border border-green-100 bg-green-50 p-4"
+                                    className="group flex items-center gap-4 rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 to-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-lg"
                                 >
 
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-500 text-white">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-md">
 
                                         <CheckCircle2 size={20} />
 
@@ -475,7 +476,7 @@ const router = useRouter();
                                 whileTap={{
                                     scale: 0.98,
                                 }}
-                                onClick={() => router.push("/book-free-consultation")}
+                                onClick={() => { window.location.href = CONTACT_URL; }}
                                 className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:border-orange-300 hover:shadow-xl"
                             >
                                 {/* Blur Overlay */}
@@ -529,11 +530,10 @@ const router = useRouter();
                             whileTap={{
                                 scale: 0.97,
                             }}
+                            onClick={() => {window.location.href=CONTACT_URL;}}
                             className="mt-8 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 px-10 py-4 text-lg font-semibold text-white shadow-xl"
                         >
-
                             Book My FREE Career Counseling →
-
                         </motion.button>
 
                         <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">

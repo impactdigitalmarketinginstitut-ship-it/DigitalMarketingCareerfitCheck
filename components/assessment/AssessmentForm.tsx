@@ -36,12 +36,7 @@ export default function AssessmentForm() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
   function handleLeadContinue(data: LeadData) {
-    // Save lead details
     setLead(data);
-
-    // Later we'll send to CRM here
-
-    // Move to Assessment
     setStep("questions");
   }
 
@@ -63,19 +58,6 @@ function handleAnswer(optionId: string) {
       setStep("complete");
     }
   }, 250);
-}
-
-function handleNext() {
-  if (currentQuestion < questions.length - 1) {
-    setCurrentQuestion((prev) => prev + 1);
-    return;
-  }
-
-  const assessmentResult = calculateAssessment(answers);
-
-  setResult(assessmentResult);
-
-  setStep("complete");
 }
 
   function handlePrevious() {
@@ -106,7 +88,12 @@ if (step === "analyzing") {
   );
 }
 if (step === "report" && result) {
-  return <ReportPreview result={result} />;
+  return (
+    <ReportPreview
+      result={result}
+      lead={lead}
+    />
+  );
 }
 
   return (

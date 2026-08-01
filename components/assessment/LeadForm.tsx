@@ -81,7 +81,7 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
   }
 
  return (
-  <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50 px-4 py-4">
+  <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50 px-4 py-3">
 
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -91,7 +91,7 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
     >
       {/* Header */}
 
-      <div className="bg-gradient-to-r from-[#163A63] to-[#27558C] px-6 py-6 text-center text-white">
+      <div className="bg-gradient-to-r from-[#163A63] to-[#27558C] px-6 py-4 text-center text-white">
 
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/15">
           <Sparkles size={22} />
@@ -111,7 +111,7 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 p-6"
+        className="space-y-4 p-4"
       >
 
         {/* Name */}

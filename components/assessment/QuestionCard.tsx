@@ -124,12 +124,8 @@ export default function QuestionCard({
         }}
 
         className="w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
-
       >
-
-        {/* Header */}
-
-        <div className="border-b border-slate-200 bg-white px-6 py-4">
+        <div className="border-b border-slate-200 bg-white px-6 py-2">
 
           <div className="flex items-center justify-between">
 
@@ -157,7 +153,7 @@ export default function QuestionCard({
 
           </div>
 
-          <div className="mt-3">
+          <div className="mt-1">
 
             <ProgressBar progress={progress} />
 
@@ -165,9 +161,7 @@ export default function QuestionCard({
 
         </div>
 
-        {/* Body */}
-
-        <div className="px-6 py-5">
+        <div className="px-6 py-3">
 
           <motion.div
 
@@ -255,8 +249,6 @@ export default function QuestionCard({
                       : "border-slate-200 bg-white hover:border-orange-200 hover:shadow-md"
                     }`}
                 >
-                  {/* Left Accent */}
-
                   <motion.div
                     animate={{
                       opacity: active ? 1 : 0,
@@ -267,9 +259,6 @@ export default function QuestionCard({
                     }}
                     className="absolute left-0 top-0 h-full w-1 origin-center rounded-r-full bg-orange-500"
                   />
-
-                  {/* Radio */}
-
                   <div
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all
 
@@ -291,9 +280,6 @@ export default function QuestionCard({
                       className="h-2 w-2 rounded-full bg-white"
                     />
                   </div>
-
-                  {/* Text */}
-
                   <span
                     className={`text-[15px] transition-colors
 

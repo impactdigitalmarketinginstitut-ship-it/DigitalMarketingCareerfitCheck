@@ -6,7 +6,7 @@ export default function ProgressBar({
   progress,
 }: ProgressBarProps) {
   return (
-    <div className="mt-6">
+    <div className="mt-4">
       {/* Percentage */}
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-medium text-gray-600">
