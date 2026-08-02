@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 interface LeadFormProps {
   onContinue: (data: {
+    leadId: string;
     fullName: string;
     whatsapp: string;
   }) => void;
@@ -66,19 +67,59 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validate()) return;
+  if (!validate()) return;
 
-    setLoading(true);
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+
+
+      `${process.env.NEXT_PUBLIC_CRM_URL}/api/website-assessment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_CRM_API_KEY!,
+        },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          phone: whatsapp.replace(/\D/g, ""),
+        }),
+      }
+    );
+
+    console.log("Status:", response.status);
+
+const responseText = await response.text();
+
+console.log("Response:", responseText);
+
+const data = responseText ? JSON.parse(responseText) : {};
+
+console.log("Status:", response.status);
+console.log("Data:", data);
+
+if (!response.ok) {
+  console.error(data);
+  throw new Error(data.message || "Failed to create lead");
+}
 
     onContinue({
+      leadId: data.leadId,
       fullName: fullName.trim(),
       whatsapp: whatsapp.replace(/\D/g, ""),
     });
+  } catch (err) {
+    console.error(err);
 
+    alert("Unable to start assessment. Please try again.");
+  } finally {
     setLoading(false);
   }
+}
 
  return (
   <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50 px-4 py-3">

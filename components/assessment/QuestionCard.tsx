@@ -63,7 +63,6 @@ export default function QuestionCard({
     1,
     Math.ceil((remainingQuestions * 13) / 60)
   );
-
   // Keyboard Shortcuts
   useEffect(() => {
 
