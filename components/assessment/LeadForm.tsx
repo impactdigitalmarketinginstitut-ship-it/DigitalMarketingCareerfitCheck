@@ -72,10 +72,11 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
   if (!validate()) return;
 
   setLoading(true);
+  console.log(process.env.NEXT_PUBLIC_CRM_URL);
 
   try {
     const response = await fetch(
-
+    
 
       `${process.env.NEXT_PUBLIC_CRM_URL}/api/website-assessment`,
       {
