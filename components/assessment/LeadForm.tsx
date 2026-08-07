@@ -10,6 +10,8 @@ import {
   Sparkles,
   Clock3,
 } from "lucide-react";
+import PhoneInput from "react-phone-number-input";
+import { isValidPhoneNumber } from "react-phone-number-input";
 interface LeadFormProps {
   onContinue: (data: {
     leadId: string;
@@ -49,15 +51,11 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
       isValid = false;
     }
 
-    // WhatsApp Validation
-    const phone = whatsapp.replace(/\D/g, "");
-
-    if (!phone) {
+    if (!whatsapp) {
       newErrors.whatsapp = "Please enter your WhatsApp number.";
       isValid = false;
-    } else if (phone.length < 10 || phone.length > 15) {
-      newErrors.whatsapp =
-        "Enter a valid WhatsApp number.";
+    } else if (!isValidPhoneNumber(whatsapp)) {
+      newErrors.whatsapp = "Please enter a valid WhatsApp number.";
       isValid = false;
     }
 
@@ -67,226 +65,218 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
   }
 
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!validate()) return;
+    if (!validate()) return;
 
-  setLoading(true);
-  console.log(process.env.NEXT_PUBLIC_CRM_URL);
+    setLoading(true);
+    console.log(process.env.NEXT_PUBLIC_CRM_URL);
 
-  try {
-    const response = await fetch(
-    
+    try {
+      const response = await fetch(
 
-      `${process.env.NEXT_PUBLIC_CRM_URL}/api/website-assessment`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_CRM_API_KEY!,
-        },
-        body: JSON.stringify({
-          fullName: fullName.trim(),
-          phone: whatsapp.replace(/\D/g, ""),
-        }),
+
+        `${process.env.NEXT_PUBLIC_CRM_URL}/api/website-assessment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.NEXT_PUBLIC_CRM_API_KEY!,
+          },
+          body: JSON.stringify({
+            fullName: fullName.trim(),
+           phone: whatsapp
+          }),
+        }
+      );
+
+      console.log("Status:", response.status);
+
+      const responseText = await response.text();
+
+      console.log("Response:", responseText);
+
+      const data = responseText ? JSON.parse(responseText) : {};
+
+      console.log("Status:", response.status);
+      console.log("Data:", data);
+
+      if (!response.ok) {
+        console.error(data);
+        throw new Error(data.message || "Failed to create lead");
       }
-    );
 
-    console.log("Status:", response.status);
+      onContinue({
+        leadId: data.leadId,
+        fullName: fullName.trim(),
+        whatsapp,
+      });
+    } catch (err) {
+      console.error(err);
 
-const responseText = await response.text();
-
-console.log("Response:", responseText);
-
-const data = responseText ? JSON.parse(responseText) : {};
-
-console.log("Status:", response.status);
-console.log("Data:", data);
-
-if (!response.ok) {
-  console.error(data);
-  throw new Error(data.message || "Failed to create lead");
-}
-
-    onContinue({
-      leadId: data.leadId,
-      fullName: fullName.trim(),
-      whatsapp: whatsapp.replace(/\D/g, ""),
-    });
-  } catch (err) {
-    console.error(err);
-
-    alert("Unable to start assessment. Please try again.");
-  } finally {
-    setLoading(false);
+      alert("Unable to start assessment. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
- return (
-  <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50 px-4 py-3">
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50 px-4 py-3">
 
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
-      className="w-full max-w-lg overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-2xl backdrop-blur"
-    >
-      {/* Header */}
-
-      <div className="bg-gradient-to-r from-[#163A63] to-[#27558C] px-6 py-4 text-center text-white">
-
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/15">
-          <Sparkles size={22} />
-        </div>
-
-        <h1 className="text-2xl font-bold leading-tight">
-          Is Digital Marketing the
-          <br />
-          Right Career for You?
-        </h1>
-
-        <p className="mt-2 text-sm text-white/80">
-          Take a free 3-minute assessment and receive your personalized career report.
-        </p>
-
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 p-4"
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+        className="w-full max-w-lg overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-2xl backdrop-blur"
       >
+        {/* Header */}
 
-        {/* Name */}
+        <div className="bg-gradient-to-r from-[#163A63] to-[#27558C] px-6 py-4 text-center text-white">
 
-        <div>
-
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Full Name
-          </label>
-
-          <div className="flex items-center rounded-xl border border-gray-200 px-3 transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100">
-
-            <User
-              size={18}
-              className="text-gray-400"
-            />
-
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-
-                if (errors.fullName) {
-                  setErrors((prev) => ({
-                    ...prev,
-                    fullName: "",
-                  }));
-                }
-              }}
-              className="w-full bg-transparent px-3 py-3 outline-none"
-            />
-
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/15">
+            <Sparkles size={22} />
           </div>
 
-          {errors.fullName && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.fullName}
-            </p>
-          )}
+          <h1 className="text-2xl font-bold leading-tight">
+            Is Digital Marketing the
+            <br />
+            Right Career for You?
+          </h1>
+
+          <p className="mt-2 text-sm text-white/80">
+            Take a free 3-minute assessment and receive your personalized career report.
+          </p>
 
         </div>
 
-        {/* WhatsApp */}
-
-        <div>
-
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            WhatsApp Number
-          </label>
-
-          <div className="flex items-center rounded-xl border border-gray-200 px-3 transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100">
-
-            <Phone
-              size={18}
-              className="text-gray-400"
-            />
-
-            <input
-              type="tel"
-              placeholder="Enter your WhatsApp number"
-              value={whatsapp}
-              onChange={(e) => {
-                setWhatsapp(e.target.value);
-
-                if (errors.whatsapp) {
-                  setErrors((prev) => ({
-                    ...prev,
-                    whatsapp: "",
-                  }));
-                }
-              }}
-              className="w-full bg-transparent px-3 py-3 outline-none"
-            />
-
-          </div>
-
-          {errors.whatsapp && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.whatsapp}
-            </p>
-          )}
-
-        </div>
-
-        {/* Trust */}
-
-        <div className="rounded-xl border border-orange-100 bg-orange-50 p-4">
-
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <Clock3 size={16} className="text-orange-500" />
-            <span>3-minute assessment</span>
-          </div>
-
-          <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-            <ShieldCheck size={16} className="text-orange-500" />
-            <span>AI-powered personalized report</span>
-          </div>
-
-          <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-            <ShieldCheck size={16} className="text-orange-500" />
-            <span>Free career counseling</span>
-          </div>
-
-        </div>
-
-        {/* Button */}
-
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 py-3.5 text-base font-semibold text-white shadow-lg"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 p-4"
         >
-          {loading ? (
-            "Starting..."
-          ) : (
-            <>
-              Start Assessment
-              <ArrowRight size={18} />
-            </>
-          )}
-        </motion.button>
 
-        <p className="text-center text-[11px] text-gray-500">
-          Your details are secure and used only for your assessment.
-        </p>
+          {/* Name */}
 
-      </form>
+          <div>
 
-    </motion.div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
 
-  </div>
-);
+            <div className="flex items-center rounded-xl border border-gray-200 px-3 transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100">
+
+              <User
+                size={18}
+                className="text-gray-400"
+              />
+
+              <input
+                type="text"
+                placeholder="Enter your full name"
+                value={fullName}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+
+                  if (errors.fullName) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      fullName: "",
+                    }));
+                  }
+                }}
+                className="w-full bg-transparent px-3 py-3 outline-none"
+              />
+
+            </div>
+
+            {errors.fullName && (
+              <p className="mt-1 text-xs text-red-500">
+                {errors.fullName}
+              </p>
+            )}
+
+          </div>
+
+          {/* WhatsApp */}
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              WhatsApp Number
+            </label>
+
+            <div className="rounded-xl border border-gray-200 px-3 py-3 transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100">
+              <PhoneInput
+                international
+                defaultCountry="IN"
+                value={whatsapp}
+                onChange={(value) => {
+                  setWhatsapp(value || "");
+
+                  if (errors.whatsapp) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      whatsapp: "",
+                    }));
+                  }
+                }}
+                placeholder="Enter WhatsApp Number"
+                className="phone-input"
+              />
+            </div>
+
+            {errors.whatsapp && (
+              <p className="mt-1 text-xs text-red-500">
+                {errors.whatsapp}
+              </p>
+            )}
+          </div>
+
+          {/* Trust */}
+
+          <div className="rounded-xl border border-orange-100 bg-orange-50 p-4">
+
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <Clock3 size={16} className="text-orange-500" />
+              <span>3-minute assessment</span>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+              <ShieldCheck size={16} className="text-orange-500" />
+              <span>AI-powered personalized report</span>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+              <ShieldCheck size={16} className="text-orange-500" />
+              <span>Free career counseling</span>
+            </div>
+
+          </div>
+
+          {/* Button */}
+
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 py-3.5 text-base font-semibold text-white shadow-lg"
+          >
+            {loading ? (
+              "Starting..."
+            ) : (
+              <>
+                Start Assessment
+                <ArrowRight size={18} />
+              </>
+            )}
+          </motion.button>
+
+          <p className="text-center text-[11px] text-gray-500">
+            Your details are secure and used only for your assessment.
+          </p>
+
+        </form>
+
+      </motion.div>
+
+    </div>
+  );
 }
