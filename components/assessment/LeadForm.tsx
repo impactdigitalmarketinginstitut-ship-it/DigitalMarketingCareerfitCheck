@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   User,
-  Phone,
   ArrowRight,
   ShieldCheck,
   Sparkles,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import { isValidPhoneNumber } from "react-phone-number-input";
+
 interface LeadFormProps {
   onContinue: (data: {
     leadId: string;
@@ -20,7 +20,9 @@ interface LeadFormProps {
   }) => void;
 }
 
-export default function LeadForm({ onContinue }: LeadFormProps) {
+export default function LeadForm({
+  onContinue,
+}: LeadFormProps) {
   const [fullName, setFullName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
 
@@ -39,23 +41,37 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
 
     let isValid = true;
 
-    // Full Name Validation
+    // ==============================
+    // FULL NAME VALIDATION
+    // ==============================
+
     if (!fullName.trim()) {
-      newErrors.fullName = "Please enter your full name.";
+      newErrors.fullName =
+        "Please enter your full name.";
       isValid = false;
     } else if (fullName.trim().length < 2) {
-      newErrors.fullName = "Name must be at least 2 characters.";
+      newErrors.fullName =
+        "Name must be at least 2 characters.";
       isValid = false;
-    } else if (!/^[A-Za-z ]+$/.test(fullName.trim())) {
-      newErrors.fullName = "Only letters and spaces are allowed.";
+    } else if (
+      !/^[A-Za-z ]+$/.test(fullName.trim())
+    ) {
+      newErrors.fullName =
+        "Only letters and spaces are allowed.";
       isValid = false;
     }
 
+    // ==============================
+    // WHATSAPP VALIDATION
+    // ==============================
+
     if (!whatsapp) {
-      newErrors.whatsapp = "Please enter your WhatsApp number.";
+      newErrors.whatsapp =
+        "Please enter your WhatsApp number.";
       isValid = false;
     } else if (!isValidPhoneNumber(whatsapp)) {
-      newErrors.whatsapp = "Please enter a valid WhatsApp number.";
+      newErrors.whatsapp =
+        "Please enter a valid WhatsApp number.";
       isValid = false;
     }
 
@@ -64,47 +80,127 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
     return isValid;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
 
     if (!validate()) return;
 
     setLoading(true);
-    console.log(process.env.NEXT_PUBLIC_CRM_URL);
 
     try {
+      // ==========================================
+      // GET CURRENT WEBSITE PAGE
+      // ==========================================
+
+      const pageSource =
+        window.location.pathname;
+
+      // ==========================================
+      // CRM URL
+      // ==========================================
+
+      const crmUrl =
+        process.env.NEXT_PUBLIC_CRM_URL;
+
+      if (!crmUrl) {
+        throw new Error(
+          "NEXT_PUBLIC_CRM_URL is not configured."
+        );
+      }
+
+      // ==========================================
+      // SEND LEAD TO CRM
+      // ==========================================
+
       const response = await fetch(
-
-
-        `${process.env.NEXT_PUBLIC_CRM_URL}/api/website-assessment`,
+        `${crmUrl}/api/website-assessment`,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": process.env.NEXT_PUBLIC_CRM_API_KEY!,
+
+            "x-api-key":
+              process.env
+                .NEXT_PUBLIC_CRM_API_KEY || "",
           },
+
           body: JSON.stringify({
             fullName: fullName.trim(),
-           phone: whatsapp
+
+            phone: whatsapp,
+
+            // This records the page where
+            // the user submitted the form
+            page_source: pageSource,
           }),
         }
       );
 
-      console.log("Status:", response.status);
+      // ==========================================
+      // READ RESPONSE
+      // ==========================================
 
-      const responseText = await response.text();
+      const responseText =
+        await response.text();
 
-      console.log("Response:", responseText);
+      let data: any = {};
 
-      const data = responseText ? JSON.parse(responseText) : {};
+      // ==========================================
+      // SAFELY PARSE JSON
+      // ==========================================
 
-      console.log("Status:", response.status);
-      console.log("Data:", data);
+      try {
+        data = responseText
+          ? JSON.parse(responseText)
+          : {};
+      } catch (parseError) {
+        console.error(
+          "CRM returned non-JSON response:",
+          responseText
+        );
+
+        console.error(
+          "CRM response status:",
+          response.status
+        );
+
+        throw new Error(
+          `CRM returned an invalid response. Status: ${response.status}`
+        );
+      }
+
+      // ==========================================
+      // HANDLE API ERROR
+      // ==========================================
 
       if (!response.ok) {
-        console.error(data);
-        throw new Error(data.message || "Failed to create lead");
+        throw new Error(
+          data?.message ||
+            "Failed to create lead"
+        );
       }
+
+      // ==========================================
+      // CHECK LEAD ID
+      // ==========================================
+
+      if (!data?.leadId) {
+        console.error(
+          "CRM response:",
+          data
+        );
+
+        throw new Error(
+          "Lead was created but no lead ID was returned."
+        );
+      }
+
+      // ==========================================
+      // CONTINUE TO ASSESSMENT
+      // ==========================================
 
       onContinue({
         leadId: data.leadId,
@@ -112,9 +208,16 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
         whatsapp,
       });
     } catch (err) {
-      console.error(err);
+      console.error(
+        "Assessment submission error:",
+        err
+      );
 
-      alert("Unable to start assessment. Please try again.");
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Unable to start assessment. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -122,17 +225,25 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-orange-50 px-4 py-3">
-
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
+        initial={{
+          opacity: 0,
+          y: 24,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.45,
+        }}
         className="w-full max-w-lg overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-2xl backdrop-blur"
       >
-        {/* Header */}
+        {/* ======================================
+            HEADER
+        ====================================== */}
 
         <div className="bg-gradient-to-r from-[#163A63] to-[#27558C] px-6 py-4 text-center text-white">
-
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/15">
             <Sparkles size={22} />
           </div>
@@ -144,26 +255,30 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
           </h1>
 
           <p className="mt-2 text-sm text-white/80">
-            Take a free 3-minute assessment and receive your personalized career report.
+            Take a free 3-minute assessment
+            and receive your personalized
+            career report.
           </p>
-
         </div>
+
+        {/* ======================================
+            FORM
+        ====================================== */}
 
         <form
           onSubmit={handleSubmit}
           className="space-y-4 p-4"
         >
-
-          {/* Name */}
+          {/* ====================================
+              FULL NAME
+          ==================================== */}
 
           <div>
-
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Full Name
             </label>
 
             <div className="flex items-center rounded-xl border border-gray-200 px-3 transition-all focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-100">
-
               <User
                 size={18}
                 className="text-gray-400"
@@ -174,7 +289,9 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
                 placeholder="Enter your full name"
                 value={fullName}
                 onChange={(e) => {
-                  setFullName(e.target.value);
+                  setFullName(
+                    e.target.value
+                  );
 
                   if (errors.fullName) {
                     setErrors((prev) => ({
@@ -185,7 +302,6 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
                 }}
                 className="w-full bg-transparent px-3 py-3 outline-none"
               />
-
             </div>
 
             {errors.fullName && (
@@ -193,10 +309,11 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
                 {errors.fullName}
               </p>
             )}
-
           </div>
 
-          {/* WhatsApp */}
+          {/* ====================================
+              WHATSAPP NUMBER
+          ==================================== */}
 
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -230,34 +347,60 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
             )}
           </div>
 
-          {/* Trust */}
+          {/* ====================================
+              BENEFITS
+          ==================================== */}
 
           <div className="rounded-xl border border-orange-100 bg-orange-50 p-4">
-
             <div className="flex items-center gap-2 text-sm text-gray-700">
-              <Clock3 size={16} className="text-orange-500" />
-              <span>3-minute assessment</span>
+              <Clock3
+                size={16}
+                className="text-orange-500"
+              />
+
+              <span>
+                3-minute assessment
+              </span>
             </div>
 
             <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-              <ShieldCheck size={16} className="text-orange-500" />
-              <span>AI-powered personalized report</span>
+              <ShieldCheck
+                size={16}
+                className="text-orange-500"
+              />
+
+              <span>
+                AI-powered personalized
+                report
+              </span>
             </div>
 
             <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
-              <ShieldCheck size={16} className="text-orange-500" />
-              <span>Free career counseling</span>
-            </div>
+              <ShieldCheck
+                size={16}
+                className="text-orange-500"
+              />
 
+              <span>
+                Free career counseling
+              </span>
+            </div>
           </div>
 
-          {/* Button */}
+          {/* ====================================
+              SUBMIT BUTTON
+          ==================================== */}
 
           <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+            type="submit"
+            whileHover={{
+              scale: 1.01,
+            }}
+            whileTap={{
+              scale: 0.98,
+            }}
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 py-3.5 text-base font-semibold text-white shadow-lg"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 py-3.5 text-base font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? (
               "Starting..."
@@ -269,14 +412,16 @@ export default function LeadForm({ onContinue }: LeadFormProps) {
             )}
           </motion.button>
 
+          {/* ====================================
+              SECURITY MESSAGE
+          ==================================== */}
+
           <p className="text-center text-[11px] text-gray-500">
-            Your details are secure and used only for your assessment.
+            Your details are secure and used
+            only for your assessment.
           </p>
-
         </form>
-
       </motion.div>
-
     </div>
   );
 }
